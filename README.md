@@ -1,2 +1,2 @@
-# ai-chatbot
-An interactive chatbot using LLM and Prompt-engineering technologies
+# spotifybud
+An interactive chatbot that generates spotify playlists and recommends music depending on your mood.
