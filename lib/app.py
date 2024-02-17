@@ -1,11 +1,8 @@
-import spotipy
-import asyncio
-import telegram
-
 import logging
 from telegram import Update
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, ContextTypes, CommandHandler
-from auth import token
+from auth import token, spotify_client_id, spotify_client_secret
+import spotify_api as sp_api
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -21,22 +18,30 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
     
-async def caps(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text_caps = ' '.join(context.args).upper()
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
-    
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+
+async def playlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    #parse args
+    msg = update.message.text
+    msg = msg.split(' ')
+    if len(msg) <= 1:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="What kind of playlist would you like?")
+    else:
+        #call spotify api
+        link = sp_api.create_playlist(' '.join(msg[1:]), 10)
+        #send playlist link as response
+        await context.bot.send_message(chat_id=update.effective_chat.id, text= str(link))
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(token).build()
     
     start_handler = CommandHandler('start', start)
     echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
-    caps_handler = CommandHandler('caps', caps)
-    unknown_handler = MessageHandler(filters.COMMAND, unknown)
-    application.add_handler(unknown_handler)
-    application.add_handler(caps_handler)
+    spotify_handler = CommandHandler('playlist', playlist, has_args=True)
+
+
+    application.add_handler(spotify_handler)
     application.add_handler(start_handler)
     application.add_handler(echo_handler)
     application.run_polling()
