@@ -16,6 +16,14 @@ def get_songs(query, numSongs):
         songs.append(i['uri'])
     return songs
 
+def get_recommendations(query, numSongs):
+    sp = spotipy.Spotify(auth_manager=spotipy.SpotifyOAuth(client_id=spotify_client_id, client_secret=spotify_client_secret, redirect_uri= redirect_uri, scope="playlist-modify-public"))
+    #get id of first result of query and find recommendations
+    id = sp.search(q=query, limit=1, type='track')['tracks']['items'][0]['id']
+    recommendations = sp.recommendations(seed_tracks=[id], limit=numSongs)
+    return recommendations['tracks'][0]['external_urls']['spotify'], recommendations['tracks'][0]['name']
+
+
 def create_playlist(query, numSongs):
     # initializing size of string
     N = 5
