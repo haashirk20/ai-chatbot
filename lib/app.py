@@ -1,60 +1,93 @@
 import logging
 from telegram import Update
-from telegram.ext import filters, MessageHandler, ApplicationBuilder, ContextTypes, CommandHandler
+from telegram.ext import (
+    filters,
+    MessageHandler,
+    ApplicationBuilder,
+    ContextTypes,
+    CommandHandler,
+)
 from auth import token, spotify_client_id, spotify_client_secret
 import spotify_api as sp_api
 
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
-        chat_id=update.effective_chat.id, 
-        text="I'm a bot, please talk to me!"
-        )
-    
+        chat_id=update.effective_chat.id,
+        text="Hi, type /help to see the available commands.",
+    )
+
+
+async def handle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.message.text
+    msg = msg.split(" ")
+    response = ""
+    if msg[0] == "/playlist":
+        response = playlist(update, context)
+    elif msg[0] == "/recommend":
+        response = recommend(update, context)
+    elif msg[0] == "/help":
+        response = help(update, context)
+    else:
+        response = unknown(update, context)
+
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=str(response))
+
+
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
-    
-async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+    return "Sorry, I didn't understand that command. Type /help to see the available commands."
 
-async def playlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    #parse args
+
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    return "Available commands: \n /playlist <genre/artist/song> - creates a playlist based on the parameters \n /recommend <song> - recommends a song based on the song you input \n /help - brings up this prompt"
+
+
+def playlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # parse args
     msg = update.message.text
-    msg = msg.split(' ')
+    msg = msg.split(" ")
     if len(msg) <= 1:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="What kind of playlist would you like?")
+        response = "What genre/artist/song would you like a playlist for?"
     else:
-        #call spotify api
-        link = sp_api.create_playlist(' '.join(msg[1:]), 10)
-        #send playlist link as response
-        await context.bot.send_message(chat_id=update.effective_chat.id, text= str(link))
+        # call spotify api
+        link = sp_api.create_playlist(" ".join(msg[1:]), 10)
+        # send playlist link as response
+        response = "Here is the playlist link: " + link
+    return response
 
-async def recommend(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+def recommend(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message.text
-    msg = msg.split(' ')
+    msg = msg.split(" ")
     if len(msg) <= 1:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="What kind of playlist would you like?")
+        msg = "What song would you like a recommendation for?"
     else:
-        #call spotify api
-        link, name  = sp_api.get_recommendations(' '.join(msg[1:]), 10)
-        #send playlist link as response
-        msg = "if you like " + ' '.join(msg[1:]) + " you should listen to " + name + " at " + link
-        await context.bot.send_message(chat_id=update.effective_chat.id, text= msg)
+        # call spotify api
+        link, name = sp_api.get_recommendation(" ".join(msg[1:]), 10)
+        # send playlist link as response
+        msg = (
+            'if you like "'
+            + " ".join(msg[1:])
+            + '" you should listen to "'
+            + name[1]
+            + " - "
+            + name[0]
+            + '" at '
+            + link
+        )
+    return msg
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     application = ApplicationBuilder().token(token).build()
-    
-    start_handler = CommandHandler('start', start)
-    echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
-    spotify_handler = CommandHandler('playlist', playlist, has_args=True)
-    recommend_handler = CommandHandler('recommend', recommend, has_args=True)
 
-    application.add_handler(recommend_handler)
-    application.add_handler(spotify_handler)
-    application.add_handler(start_handler)
-    application.add_handler(echo_handler)
+    message_handler = MessageHandler(filters.CHAT & (~filters.COMMAND), handle_message)
+    command_handler = MessageHandler(filters.COMMAND, handle_command)
+
+    application.add_handler(message_handler)
+    application.add_handler(command_handler)
     application.run_polling()
