@@ -5,7 +5,6 @@ from telegram.ext import (
     MessageHandler,
     ApplicationBuilder,
     ContextTypes,
-    CommandHandler,
 )
 import json
 import spotify_api as sp_api
@@ -45,7 +44,7 @@ def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    return "Available commands: \n /playlist <genre/artist/song> - creates a playlist based on the parameters \n /recommend <song> - recommends a song based on the song you input \n /help - brings up this prompt"
+    return "Available commands: \n /convert <soundcloud_playlist_link> - converts a soundcloud playlist to a spotify one \n /playlist <genre/artist/song> - creates a playlist based on the parameters \n /recommend <song> - recommends a song based on the song you input \n /help - brings up this prompt"
 
 
 def playlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
