@@ -1,10 +1,10 @@
 # Spotifybud
-An interactive Telegram chatbot that converts soundcloud playlists to spotify, recommends music, and generates user-tailored playlists
+An interactive Telegram chatbot that converts soundcloud playlists to spotify, recommends music, and generates user-tailored playlists.
 # Installation
 Download the source code from Github, and use the .exe file located in the "apps" directory to run.
 Then, navigate to https://t.me/spotifybuddy_bot to chat with the bot.
 # Usage
-The bot has 4 commands:
+The bot has 4 commands;
 To request a song recommendation:
 ```bash
 /recommend <song_title>
