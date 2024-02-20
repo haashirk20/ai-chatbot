@@ -95,9 +95,10 @@ def convert(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return response
 
 if __name__ == "__main__":
-    with open("./auth.json") as f:
-        data = json.load(f)
-        token = data["token"]
+    # with open("./auth.json") as f:
+    #     data = json.load(f)
+    #     token = data["token"]
+    from auth import token
     application = ApplicationBuilder().token(token).build()
 
     message_handler = MessageHandler(filters.CHAT & (~filters.COMMAND), handle_message)

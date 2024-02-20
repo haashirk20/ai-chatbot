@@ -5,11 +5,12 @@ import json
 from sclib import SoundcloudAPI, Track, Playlist
 
 def auth():
-    with open("./auth.json") as f:
-        data = json.load(f)
-        spotify_client_id = data["spotify_client_id"]
-        spotify_client_secret = data["spotify_client_secret"]
-        redirect_uri = data["redirect_uri"]
+    # with open("./auth.json") as f:
+    #     data = json.load(f)
+    #     spotify_client_id = data["spotify_client_id"]
+    #     spotify_client_secret = data["spotify_client_secret"]
+    #     redirect_uri = data["redirect_uri"]
+    from auth import spotify_client_id, spotify_client_secret, redirect_uri
     return spotipy.Spotify(
         auth_manager=spotipy.SpotifyOAuth(
             client_id=spotify_client_id,
