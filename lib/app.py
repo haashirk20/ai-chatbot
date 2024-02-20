@@ -5,9 +5,8 @@ from telegram.ext import (
     MessageHandler,
     ApplicationBuilder,
     ContextTypes,
-    CommandHandler,
 )
-from auth import token, spotify_client_id, spotify_client_secret
+import json
 import spotify_api as sp_api
 
 logging.basicConfig(
@@ -32,18 +31,20 @@ async def handle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response = recommend(update, context)
     elif msg[0] == "/help":
         response = help(update, context)
+    elif msg[0] == "/convert":
+        response = convert(update, context)
     else:
         response = unknown(update, context)
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=str(response))
 
 
-async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return "Sorry, I didn't understand that command. Type /help to see the available commands."
 
 
-async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    return "Available commands: \n /playlist <genre/artist/song> - creates a playlist based on the parameters \n /recommend <song> - recommends a song based on the song you input \n /help - brings up this prompt"
+def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    return "Available commands: \n /convert <soundcloud_playlist_link> - converts a soundcloud playlist to a spotify one \n /playlist <genre/artist/song> - creates a playlist based on the parameters \n /recommend <song> - recommends a song based on the song you input \n /help - brings up this prompt"
 
 
 def playlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -54,7 +55,8 @@ def playlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response = "What genre/artist/song would you like a playlist for?"
     else:
         # call spotify api
-        link = sp_api.create_playlist(" ".join(msg[1:]), 10)
+        songs = sp_api.get_songs(" ".join(msg[1:]), 10)
+        link = sp_api.create_playlist(" ".join(msg[1:]), songs)
         # send playlist link as response
         response = "Here is the playlist link: " + link
     return response
@@ -81,8 +83,21 @@ def recommend(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     return msg
 
+def convert(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.message.text
+    msg = msg.split(" ")
+    #error handling
+    if len(msg) <= 1:
+        response = "What would you like to convert?"
+    else:
+        #call spotify api
+        response = sp_api.convert_playlist(" ".join(msg[1:]))
+    return response
 
 if __name__ == "__main__":
+    with open("./auth.json") as f:
+        data = json.load(f)
+        token = data["token"]
     application = ApplicationBuilder().token(token).build()
 
     message_handler = MessageHandler(filters.CHAT & (~filters.COMMAND), handle_message)

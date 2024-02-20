@@ -3,3 +3,5 @@ lib/auth.py
 foo
 lib/__pycache__/auth.cpython-312.pyc
 lib/__pycache__/spotify_api.cpython-312.pyc
+lib/auth.json
+app/auth.json
