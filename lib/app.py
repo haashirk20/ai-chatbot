@@ -95,7 +95,7 @@ def convert(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return response
 
 if __name__ == "__main__":
-    with open("./lib/auth.json") as f:
+    with open("./auth.json") as f:
         data = json.load(f)
         token = data["token"]
     application = ApplicationBuilder().token(token).build()

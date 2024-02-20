@@ -5,7 +5,7 @@ import json
 from sclib import SoundcloudAPI, Track, Playlist
 
 def auth():
-    with open("./lib/auth.json") as f:
+    with open("./auth.json") as f:
         data = json.load(f)
         spotify_client_id = data["spotify_client_id"]
         spotify_client_secret = data["spotify_client_secret"]
